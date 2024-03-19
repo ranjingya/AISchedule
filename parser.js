@@ -21,14 +21,22 @@ function scheduleHtmlParser(html) {
       re.teacher = teacher
     }
 
-    let weekArray = p.eq(0).text().match(/(\d+)-*(\d*)周+/)
-    let start = parseInt(weekArray[1]);
-    let end = parseInt(weekArray[2]);
-    if (weekArray[2] == "") {
-      re.weeks.push(start)
-    } else {
+    const rex = /(\d+)(?:-(\d+))?周(?:\((单|双)\))?/g
+    let weeksInfo = p.eq(0).text()
+    while (weekArray = rex.exec(weeksInfo)) {
+      let start = parseInt(weekArray[1]);
+      let end = parseInt(weekArray[2]) || start
+      let parity = weekArray[3]
       for (let i = start; i < end + 1; i++) {
-        re.weeks.push(i)
+        if (parity === "双") {
+          if (i % 2 == 0)
+            re.weeks.push(i)
+        } else if (parity === "单") {
+          if (i % 2 == 1)
+            re.weeks.push(i)
+        } else {
+          re.weeks.push(i)
+        }
       }
     }
 
@@ -39,13 +47,13 @@ function scheduleHtmlParser(html) {
 
     let sectionArray = p.eq(0).text().match(/(\d+)-(\d+)节+/);
     if (sectionArray) {
-      start = parseInt(sectionArray[1]);
-      end = parseInt(sectionArray[2]);
-
+      let start = parseInt(sectionArray[1]);
+      let end = parseInt(sectionArray[2]);
       for (let i = start; i < end + 1; i++) {
         re.sections.push(i);
       }
     }
+
     result.push(re)
   }
   return result
